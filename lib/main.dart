@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(MyApp());
@@ -29,12 +30,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  static const plataform = const MethodChannel("floating_button");
+  int count = 0;
+  bool exibindo = false;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+  @override
+  void initState() {
+    super.initState();
+
+    plataform.setMethodCallHandler((call) {
+      if(call.method == "touch"){
+        setState(() {
+          count += 1;
+        });
+      }
     });
+
   }
 
   @override
@@ -47,21 +58,40 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+            Text("Contagem: " + count.toString()),
+            Text("Exibindo: " + exibindo.toString()),
+            RaisedButton(
+              child: Text("Create"),
+              onPressed: () {
+                plataform.invokeMethod("create");
+              },
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            RaisedButton(
+              child: Text("show"),
+              onPressed: () {
+                plataform.invokeMethod("show");
+              },
+            ),
+            RaisedButton(
+              child: Text("hide"),
+              onPressed: () {
+                plataform.invokeMethod("hide");
+              },
+            ),
+
+            RaisedButton(
+              child: Text("isShowing"),
+              onPressed: () {
+                plataform.invokeMethod("isShowing").then((value){
+                  setState(() {
+                    exibindo = value;
+                  });
+                });
+              },
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
